@@ -5,7 +5,10 @@ setup() {
 @test "version is correct" {
   run docker run "alpine:edge" cat /etc/os-release
   [ $status -eq 0 ]
-  [ "${lines[2]}" = "VERSION_ID=3.6.0" ]
+  case "${lines[2]}" in
+    VERSION_ID=3.9*) true;;
+    *) false;;
+  esac
 }
 
 @test "package installs cleanly" {
@@ -43,3 +46,8 @@ setup() {
   [ $status -eq 1 ]
 }
 
+@test "/dev/null should be missing" {
+  run sh -c "docker export $(docker create alpine:edge) | tar -t dev/null"
+  [ "$output" != "dev/null" ]
+  [ $status -ne 0 ]
+}
